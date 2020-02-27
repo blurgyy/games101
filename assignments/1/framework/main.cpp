@@ -56,8 +56,6 @@ int main(int argc, const char** argv)
         if (argc == 4) {
             filename = std::string(argv[3]);
         }
-        else
-            return 0;
     }
 
     rst::rasterizer r(700, 700);
