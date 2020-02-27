@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(Rasterizer)
 
 find_package(OpenCV REQUIRED)
-# message(${OpenCV_INCLUDE_DIRS})
-# message(${OpenCV_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 
