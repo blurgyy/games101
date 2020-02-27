@@ -27,6 +27,23 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     // Create the model matrix for rotating the triangle around the Z axis.
     // Then return it.
 
+    float ang = rotation_angle / 180 * MY_PI;
+    float cos_ang = std::cos(ang);
+    float sin_ang = std::sin(ang);
+    model << cos_ang, -sin_ang, 0, 0, // z
+        sin_ang, cos_ang, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1;
+    // model << cos_ang, 0, sin_ang, 0, // y
+    //     0, 1, 0, 0,
+    //     -sin_ang, 0, cos_ang, 0,
+    //     0, 0, 0, 1;
+    // model << 1, 0, 0, 0, // x
+    //     0, cos_ang, -sin_ang, 0,
+    //     0, sin_ang, cos_ang, 0,
+    //     0, 0, 0, 1;
+    // std::cout << model << std::endl;
+
     return model;
 }
 
@@ -40,6 +57,33 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     // TODO: Implement this function
     // Create the projection matrix for the given parameters.
     // Then return it.
+    
+    Eigen::Matrix4f persp_ortho = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f ortho_scale = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f ortho_trans = Eigen::Matrix4f::Identity();
+    persp_ortho << zNear, 0, 0, 0,
+        0, zNear, 0, 0,
+        0, 0, zNear + zFar, -zNear * zFar,
+        0, 0, 1, 0;
+        // 0, 0, -1, 0;
+    float fov = eye_fov / 180 * MY_PI;
+    float top = std::tan(fov / 2) * zNear;
+
+    float right = top / aspect_ratio;
+    ortho_scale << 1 / right, 0, 0, 0,
+        0, 1 / top, 0, 0,
+        0, 0, 2 / (zFar - zNear), 0,
+        0, 0, 0, 1;
+    ortho_trans << 1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, -(zFar + zNear) / 2,
+        0, 0, 0, 1;
+    projection = ortho_scale * ortho_trans * persp_ortho;
+    // char x;
+    // std::cout << projection << std::endl;
+    // std::cout << projection * Eigen::Vector4f(0,0,1,1) << std::endl;
+    // scanf("%c", &x);
+    // projection = persp_ortho;
 
     return projection;
 }
@@ -88,7 +132,7 @@ int main(int argc, const char** argv)
         return 0;
     }
 
-    while (key != 27) {
+    while (key != 27 && key != 'q') {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
@@ -102,13 +146,15 @@ int main(int argc, const char** argv)
         cv::imshow("image", image);
         key = cv::waitKey(10);
 
-        std::cout << "frame count: " << frame_count++ << '\n';
+        // std::cout << "frame count: " << frame_count++ << '\n';
 
         if (key == 'a') {
             angle += 10;
+            printf("angle: %f\n", angle);
         }
         else if (key == 'd') {
             angle -= 10;
+            printf("angle: %f\n", angle);
         }
     }
 
