@@ -19,6 +19,34 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
     return view;
 }
 
+Eigen::Matrix4f get_rotation(Eigen::Vector3f axis, float rotation_angle)
+{
+    float ang = rotation_angle / 180.f * MY_PI;
+    float cos_ang = std::cos(ang);
+    float sin_ang = std::sin(ang);
+    float nx = axis[0];
+    float ny = axis[1];
+    float nz = axis[2];
+    Eigen::Matrix3f rot = Eigen::Matrix3f::Identity();
+    Eigen::Matrix3f comp1 = Eigen::Matrix3f::Identity();
+    Eigen::Matrix3f comp2 = Eigen::Matrix3f::Identity();
+    Eigen::Matrix3f comp3 = Eigen::Matrix3f::Identity();
+    comp1 *= cos_ang;
+    comp2 *= (1-cos_ang) * axis * axis.transpose();
+    comp3 << 0, -nz, ny,
+        nz, 0, -nx,
+        -ny, nx, 0;
+    comp3 *= sin_ang;
+    rot = comp1 + comp2 + comp3;
+    
+    Eigen::Matrix4f rot_hom;
+    rot_hom.block(0, 0, 3, 3) << rot;
+    rot_hom.col(3).head(3) << 0, 0, 0;
+    rot_hom.row(3) << 0, 0, 0, 1;
+
+    return rot_hom;
+}
+
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
@@ -27,23 +55,15 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     // Create the model matrix for rotating the triangle around the Z axis.
     // Then return it.
 
-    float ang = rotation_angle / 180 * MY_PI;
+    float ang = rotation_angle / 180.f * MY_PI;
     float cos_ang = std::cos(ang);
     float sin_ang = std::sin(ang);
-    model << cos_ang, -sin_ang, 0, 0, // z
+    model << cos_ang, -sin_ang, 0, 0,
         sin_ang, cos_ang, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1;
-    // model << cos_ang, 0, sin_ang, 0, // y
-    //     0, 1, 0, 0,
-    //     -sin_ang, 0, cos_ang, 0,
-    //     0, 0, 0, 1;
-    // model << 1, 0, 0, 0, // x
-    //     0, cos_ang, -sin_ang, 0,
-    //     0, sin_ang, cos_ang, 0,
-    //     0, 0, 0, 1;
-    // std::cout << model << std::endl;
 
+    // return get_rotation(Eigen::Vector3f({0, 0, 1}), rotation_angle);
     return model;
 }
 
@@ -64,9 +84,9 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     persp_ortho << zNear, 0, 0, 0,
         0, zNear, 0, 0,
         0, 0, zNear + zFar, -zNear * zFar,
-        0, 0, 1, 0;
-        // 0, 0, -1, 0;
-    float fov = eye_fov / 180 * MY_PI;
+        // 0, 0, 1, 0;
+        0, 0, -1, 0;
+    float fov = eye_fov / 180.f * MY_PI;
     float top = std::tan(fov / 2) * zNear;
 
     float right = top / aspect_ratio;
@@ -120,6 +140,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
+        // r.set_model(get_rotation(Eigen::Vector3f({1, 0, 0}), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -136,6 +157,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
+        // r.set_model(get_rotation(Eigen::Vector3f({1, 0, 0}), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
