@@ -84,14 +84,17 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     persp_ortho << zNear, 0, 0, 0,
         0, zNear, 0, 0,
         0, 0, zNear + zFar, -zNear * zFar,
-        0, 0, -1, 0;
+        // 0, 0, -1, 0;
+        0, 0, 1, 0;
     float fov = eye_fov / 180.f * MY_PI;
-    float top = std::tan(fov / 2) * zNear;
+    // float top = std::tan(fov / 2) * zNear;
+    float top = std::tan(fov / 2) * fabs(zNear);
 
     float right = top / aspect_ratio;
     ortho_scale << 1 / right, 0, 0, 0,
         0, 1 / top, 0, 0,
-        0, 0, 2 / (zFar - zNear), 0,
+        // 0, 0, 2 / (zFar - zNear), 0,
+        0, 0, 2 / fabs(zFar - zNear), 0,
         0, 0, 0, 1;
     ortho_trans << 1, 0, 0, 0,
         0, 1, 0, 0,
@@ -134,9 +137,10 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
-        // r.set_model(get_rotation(Eigen::Vector3f({1, 0, 0}), angle));
+        // r.set_model(get_rotation(Eigen::Vector3f({1, 1, 1}), angle));
         r.set_view(get_view_matrix(eye_pos));
-        r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        // r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        r.set_projection(get_projection_matrix(45, 1, -0.1, -50));
 
         r.draw(pos_id, ind_id, rst::Primitive::Triangle);
         cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
@@ -151,9 +155,10 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
-        // r.set_model(get_rotation(Eigen::Vector3f({1, 0, 0}), angle));
+        // r.set_model(get_rotation(Eigen::Vector3f({1, 1, 1}), angle));
         r.set_view(get_view_matrix(eye_pos));
-        r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        // r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        r.set_projection(get_projection_matrix(45, 1, -0.1, -50));
 
         r.draw(pos_id, ind_id, rst::Primitive::Triangle);
 
