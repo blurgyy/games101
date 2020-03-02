@@ -84,7 +84,6 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     persp_ortho << zNear, 0, 0, 0,
         0, zNear, 0, 0,
         0, 0, zNear + zFar, -zNear * zFar,
-        // 0, 0, 1, 0;
         0, 0, -1, 0;
     float fov = eye_fov / 180.f * MY_PI;
     float top = std::tan(fov / 2) * zNear;
@@ -99,11 +98,6 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
         0, 0, 1, -(zFar + zNear) / 2,
         0, 0, 0, 1;
     projection = ortho_scale * ortho_trans * persp_ortho;
-    // char x;
-    // std::cout << projection << std::endl;
-    // std::cout << projection * Eigen::Vector4f(0,0,1,1) << std::endl;
-    // scanf("%c", &x);
-    // projection = persp_ortho;
 
     return projection;
 }
