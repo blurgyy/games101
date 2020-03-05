@@ -155,13 +155,14 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                 int id = width * y + x;
                 Eigen::Vector3f point(x, y, 1.f);
                 if(z_interpolated < depth_buf[id]){
+                    // printf("zinter = %f\n", z_interpolated);
                     depth_buf[id] = z_interpolated;
                     // printf("setting: ");
                     // std::cout << point;
                     // printf(" as: ");
                     // std::cout << frame_buf[id] << std::endl;
-                    set_pixel(point, t.color[0]*255);
-                    // set_pixel(point, Eigen::Vector3f(54,7,178));
+                    set_pixel(point, t.getColor());
+                    // std::cout << t.getColor() << std::endl;
                 }
             }
         }
