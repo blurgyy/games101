@@ -44,7 +44,7 @@ static bool insideTriangle(int x, int y, const Eigen::Vector3f* _v) // where *_v
     // TODO : Implement this function to check if the point (x, y) is
     //        inside the triangle represented by _v[0], _v[1], _v[2]
 
-    Eigen::Vector3f p(x, y, 0);
+    Eigen::Vector3f p(x, y, _v[0].z());
     Eigen::Vector3f res[3];
 
     for(int i = 0; i < 3; ++ i){
@@ -145,22 +145,23 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     }
     // printf("aabb: (%d, %d) to (%d, %d)\n", minp.first, minp.second, maxp.first, maxp.second);
     int area = 0;
-    for(int x = minp.first; x < maxp.first; ++ x){
-        for(int y = minp.second; y < maxp.second; ++ y){
+    for(int x = minp.first; x <= maxp.first; ++ x){
+        for(int y = minp.second; y <= maxp.second; ++ y){
             if(insideTriangle(x, y, t.v)){
                 auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v);
                 float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                 float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                 z_interpolated *= w_reciprocal;
-                int id = width * y + x;
                 Eigen::Vector3f point(x, y, 1.f);
-                if(z_interpolated < depth_buf[id]){
+                auto ind = (height-1-round(point.y()))*width + point.x();
+                // printf("%d, %d\n", id0, id);
+                if(z_interpolated < depth_buf[ind]){
                     // printf("zinter = %f\n", z_interpolated);
-                    depth_buf[id] = z_interpolated;
+                    depth_buf[ind] = z_interpolated;
                     // printf("setting: ");
                     // std::cout << point;
                     // printf(" as: ");
-                    // std::cout << frame_buf[id] << std::endl;
+                    // std::cout << frame_buf[ind] << std::endl;
                     set_pixel(point, t.getColor());
                     // std::cout << t.getColor() << std::endl;
                 }
