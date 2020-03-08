@@ -44,7 +44,7 @@ static bool insideTriangle(int x, int y, const Eigen::Vector3f* _v) // where *_v
     // TODO : Implement this function to check if the point (x, y) is
     //        inside the triangle represented by _v[0], _v[1], _v[2]
 
-    Eigen::Vector3f p(x, y, _v[0].z());
+    Eigen::Vector3f p(x+0.5, y+0.5, _v[0].z());
     Eigen::Vector3f res[3];
 
     for(int i = 0; i < 3; ++ i){
@@ -154,16 +154,9 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                 z_interpolated *= w_reciprocal;
                 Eigen::Vector3f point(x, y, 1.f);
                 auto ind = (height-1-round(point.y()))*width + point.x();
-                // printf("%d, %d\n", id0, id);
                 if(z_interpolated < depth_buf[ind]){
-                    // printf("zinter = %f\n", z_interpolated);
                     depth_buf[ind] = z_interpolated;
-                    // printf("setting: ");
-                    // std::cout << point;
-                    // printf(" as: ");
-                    // std::cout << frame_buf[ind] << std::endl;
                     set_pixel(point, t.getColor());
-                    // std::cout << t.getColor() << std::endl;
                 }
             }
         }
