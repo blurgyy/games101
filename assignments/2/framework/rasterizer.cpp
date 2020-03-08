@@ -125,28 +125,23 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     auto v = t.toVector4();
-
-    // std::cout << "Triangle:" << std::endl;
-    // for (auto & vert : v){
-    //     std::cout << vert << std::endl;
-    // }
     
     // TODO : Find out the bounding box of current triangle.
     // iterate through the pixel and find if the current pixel is inside the triangle
 
     typedef std::pair<int, int> pii;
-    pii minp = pii(701, 701);
-    pii maxp = pii(-1, -1);
+    pii bboxmin(width+1, height+1);
+    pii bboxmax(-1, -1);
     for(auto & vert : v){
-        minp.first = std::min(minp.first, int(floor(vert.x())));
-        minp.second = std::min(minp.second, int(floor(vert.y())));
-        maxp.first = std::max(maxp.first, int(ceil(vert.x())));
-        maxp.second = std::max(maxp.second, int(ceil(vert.y())));
+        bboxmin.first = std::min(bboxmin.first, int(floor(vert.x())));
+        bboxmin.second = std::min(bboxmin.second, int(floor(vert.y())));
+        bboxmax.first = std::max(bboxmax.first, int(ceil(vert.x())));
+        bboxmax.second = std::max(bboxmax.second, int(ceil(vert.y())));
     }
-    // printf("aabb: (%d, %d) to (%d, %d)\n", minp.first, minp.second, maxp.first, maxp.second);
+    // printf("aabb: (%d, %d) to (%d, %d)\n", bboxmin.first, bboxmin.second, bboxmax.first, bboxmax.second);
     int area = 0;
-    for(int x = minp.first; x <= maxp.first; ++ x){
-        for(int y = minp.second; y <= maxp.second; ++ y){
+    for(int x = bboxmin.first; x <= bboxmax.first; ++ x){
+        for(int y = bboxmin.second; y <= bboxmax.second; ++ y){
             Eigen::Vector3f color(0, 0, 0);
             for(int i = 0; i < 4; ++ i){
                 float xn = x + 0.25 + (i>>1) * 0.5;
@@ -160,13 +155,13 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                     z_interpolated *= w_reciprocal;
                     if(z_interpolated < depth_buf[ind]){
                         depth_buf[ind] = z_interpolated;
-                        pixel_buf[ind] = (t.getColor()) / 4;
+                        pixel_buf[ind] = t.getColor();
                     }
                 }
                 color += pixel_buf[ind];
             }
             Eigen::Vector3f point(x, y, 1.f);
-            set_pixel(point, color);
+            set_pixel(point, color/4);
         }
     }
 
