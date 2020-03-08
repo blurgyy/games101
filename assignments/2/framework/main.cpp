@@ -39,8 +39,8 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     persp_ortho << zNear, 0, 0, 0,
         0, zNear, 0, 0,
         0, 0, zNear + zFar, -zNear * zFar,
-        0, 0, -1, 0;
-        // 0, 0, 1, 0;
+        // 0, 0, -1, 0;
+        0, 0, 1, 0;
     float fov = eye_fov / 180.f * MY_PI;
     // float top = std::tan(fov / 2) * zNear;
     float top = std::tan(fov / 2) * fabs(zNear);
@@ -116,7 +116,7 @@ int main(int argc, const char** argv)
 
         r.set_model(get_model_matrix(angle));
         r.set_view(get_view_matrix(eye_pos));
-        r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        r.set_projection(get_projection_matrix(45, 1, -0.1, -50));
 
         r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
         cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
@@ -134,7 +134,7 @@ int main(int argc, const char** argv)
 
         r.set_model(get_model_matrix(angle));
         r.set_view(get_view_matrix(eye_pos));
-        r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
+        r.set_projection(get_projection_matrix(45, 1, -0.1, -50));
 
         r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
 
