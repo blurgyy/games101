@@ -96,7 +96,7 @@ static Eigen::Vector3f reflect(const Eigen::Vector3f& vec, const Eigen::Vector3f
     return (2 * costheta * axis - vec).normalized();
 }
 
-struct light
+struct light // position, intensity
 {
     Eigen::Vector3f position;
     Eigen::Vector3f intensity;
@@ -168,8 +168,15 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-        
+        auto l = (light.position - point).normalized();
+        auto v = (eye_pos - point).normalized();
+        auto h = (l + v).normalized();
+        auto squared_radius = (light.position - point).squaredNorm();
 
+        auto La = ka.cwiseProduct(amb_light_intensity);
+        auto Ld = kd.cwiseProduct(light.intensity / squared_radius) * std::max(0.f, normal.dot(l));
+        auto Ls = ks.cwiseProduct(light.intensity / squared_radius) * pow(std::max(0.f, normal.dot(h)), p);
+        result_color += La + Ld + Ls;
     }
 
     return result_color * 255.f;
