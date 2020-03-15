@@ -216,25 +216,50 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     
     // TODO: Implement displacement mapping here
     // Let n = normal = (x, y, z)
+    Eigen::Vector3f n = normal.normalized();
+    float x = n.x(), y = n.y(), z = n.z();
     // Vector t = (x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),z*y/sqrt(x*x+z*z))
+    Eigen::Vector3f t(x * y / sqrt(x * x + z * z), sqrt(x * x + z * z), z * y / sqrt(x * x + z * z));
+    t = t.normalized();
     // Vector b = n cross product t
+    Eigen::Vector3f b = n.cross(t);
+    b = b.normalized();
     // Matrix TBN = [t b n]
+    Eigen::Matrix3f TBN;
+    TBN << t, b, n;
+
+    float u = payload.tex_coords.x();
+    float v = payload.tex_coords.y();
+    auto tex = payload.texture;
+    float w = tex->width;
+    float h = tex->height;
     // dU = kh * kn * (h(u+1/w,v)-h(u,v))
+    float dU = kh * kn * (tex->getColor(u + 1.f/w, v).norm() - tex->getColor(u, v).norm());
     // dV = kh * kn * (h(u,v+1/h)-h(u,v))
+    float dV = kh * kn * (tex->getColor(u, v + 1.f/h).norm() - tex->getColor(u, v).norm());
     // Vector ln = (-dU, -dV, 1)
-    // Position p = p + kh * n * h(u,v)
+    Eigen::Vector3f ln(-dU, -dV, 1);
+    ln = ln.normalized();
+    // Position p = p + kn * n * h(u,v)
+    point = point + kn * n * tex->getColor(u, v).norm();
     // Normal n = TBN * ln
-
-
+    normal = (TBN * ln).normalized();
 
     Eigen::Vector3f result_color = {0, 0, 0};
 
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
+        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
         // components are. Then, accumulate that result on the *result_color* object.
+        auto l = (light.position - point).normalized();
+        auto v = (eye_pos - point).normalized();
+        auto h = (l + v).normalized();
+        auto squared_radius = (light.position - point).squaredNorm();
 
-
+        auto La = ka.cwiseProduct(amb_light_intensity);
+        auto Ld = kd.cwiseProduct(light.intensity / squared_radius) * std::max(0.f, normal.dot(l));
+        auto Ls = ks.cwiseProduct(light.intensity / squared_radius) * pow(std::max(0.f, normal.dot(h)), p);
+        result_color += La + Ld + Ls;
     }
 
     return result_color * 255.f;
@@ -369,7 +394,7 @@ int main(int argc, const char** argv)
         }
         else if (argc == 3 && std::string(argv[2]) == "displacement")
         {
-            std::cout << "Rasterizing using the bump shader\n";
+            std::cout << "Rasterizing using the displacement shader\n";
             active_shader = displacement_fragment_shader;
         }
     }
