@@ -266,15 +266,36 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
 
     // TODO: Implement bump mapping here
     // Let n = normal = (x, y, z)
+    Eigen::Vector3f n = normal.normalized();
+    float x = n.x(), y = n.y(), z = n.z();
     // Vector t = (x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),z*y/sqrt(x*x+z*z))
+    Eigen::Vector3f t(x * y / sqrt(x * x + z * z), sqrt(x * x + z * z), z * y / sqrt(x * x + z * z));
+    t = t.normalized();
     // Vector b = n cross product t
+    Eigen::Vector3f b = n.cross(t).normalized();
+    // b = b.normalized();
     // Matrix TBN = [t b n]
+    Eigen::Matrix3f TBN;
+    TBN << t[0], b[0], n[0],
+    t[1], b[1], n[1],
+    t[2], b[2], n[2];
+
+    float u = payload.tex_coords.x();
+    float v = payload.tex_coords.y();
+    auto tex = payload.texture;
+    float w = tex->width;
+    float h = tex->height;
     // dU = kh * kn * (h(u+1/w,v)-h(u,v))
+    // WRONG： // float dU = kh * kn * (tex->getColor(u+1.f/w, v) - tex->getColor(u, v)).norm();
+    float dU = kh * kn * (tex->getColor(u+1.f/w, v).norm() - tex->getColor(u, v).norm());
     // dV = kh * kn * (h(u,v+1/h)-h(u,v))
+    // WRONG： // float dV = kh * kn * (tex->getColor(u, v+1.f/h) - tex->getColor(u, v)).norm();
+    float dV = kh * kn * (tex->getColor(u, v+1.f/h).norm() - tex->getColor(u, v).norm());
     // Vector ln = (-dU, -dV, 1)
+    Eigen::Vector3f ln(-dU, -dV, 1);
+    ln = ln.normalized();
     // Normal nd = TBN * ln
-
-
+    normal = (TBN * ln).normalized();
 
     Eigen::Vector3f result_color = {0, 0, 0};
     result_color = normal;
@@ -295,6 +316,7 @@ int main(int argc, const char** argv)
 
     // Load .obj File
     bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    // bool loadout = Loader.LoadFile("../models/bunny/bunny.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
