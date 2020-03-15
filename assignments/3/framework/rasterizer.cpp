@@ -176,8 +176,10 @@ void rst::rasterizer::draw(std::vector<Triangle *> &TriangleList) {
     float f2 = (50 + 0.1) / 2.0;
 
     Eigen::Matrix4f mvp = projection * view * model;
+    int cnt = 0;
     for (const auto& t:TriangleList)
     {
+        cnt += 1;
         Triangle newtri = *t;
 
         std::array<Eigen::Vector4f, 3> mm {
@@ -236,6 +238,7 @@ void rst::rasterizer::draw(std::vector<Triangle *> &TriangleList) {
         newtri.setColor(2, 148,121.0,92.0);
 
         // Also pass view space vertice position
+        // printf("Rasterizing triangle [ %4d/%4lu ]\n", cnt, TriangleList.size());
         rasterize_triangle(newtri, viewspace_pos);
     }
 }
@@ -281,6 +284,9 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
                 auto interpolated_color = interpolate(alpha, beta, gamma, t.color[0], t.color[1], t.color[2], 1);
                 auto interpolated_normal = interpolate(alpha, beta, gamma, t.normal[0], t.normal[1], t.normal[2], 1);
                 auto interpolated_texcoords = interpolate(alpha, beta, gamma, t.tex_coords[0], t.tex_coords[1], t.tex_coords[2], 1);
+                // assert(t.tex_coords[0][0] > 0 && t.tex_coords[0][1] > 0);
+                // assert(t.tex_coords[1][0] > 0 && t.tex_coords[1][1] > 0);
+                // assert(t.tex_coords[2][0] > 0 && t.tex_coords[2][1] > 0);
                 auto interpolated_shadingcoords = interpolate(alpha, beta, gamma, view_pos[0], view_pos[1], view_pos[2], 1);
                 
                 fragment_shader_payload payload(interpolated_color, interpolated_normal.normalized(), interpolated_texcoords, texture ? &*texture : nullptr);
