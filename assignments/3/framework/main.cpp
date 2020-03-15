@@ -134,6 +134,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 
     Eigen::Vector3f result_color = {0, 0, 0};
 
+    auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
@@ -143,11 +144,11 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
         auto h = (l + v).normalized();
         auto squared_radius = (light.position - point).squaredNorm();
 
-        auto La = ka.cwiseProduct(amb_light_intensity);
         auto Ld = kd.cwiseProduct(light.intensity / squared_radius) * std::max(0.f, normal.dot(l));
         auto Ls = ks.cwiseProduct(light.intensity / squared_radius) * pow(std::max(0.f, normal.dot(h)), p);
-        result_color += La + Ld + Ls;
+        result_color += Ld + Ls;
     }
+    result_color += La;
 
     return result_color * 255.f;
 }
@@ -172,6 +173,7 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f normal = payload.normal;
 
     Eigen::Vector3f result_color = {0, 0, 0};
+    auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
@@ -181,11 +183,11 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
         auto h = (l + v).normalized();
         auto squared_radius = (light.position - point).squaredNorm();
 
-        auto La = ka.cwiseProduct(amb_light_intensity);
         auto Ld = kd.cwiseProduct(light.intensity / squared_radius) * std::max(0.f, normal.dot(l));
         auto Ls = ks.cwiseProduct(light.intensity / squared_radius) * pow(std::max(0.f, normal.dot(h)), p);
-        result_color += La + Ld + Ls;
+        result_color += Ld + Ls;
     }
+    result_color += La;
 
     return result_color * 255.f;
 }
@@ -247,6 +249,7 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
 
     Eigen::Vector3f result_color = {0, 0, 0};
 
+    auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
@@ -256,11 +259,11 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
         auto h = (l + v).normalized();
         auto squared_radius = (light.position - point).squaredNorm();
 
-        auto La = ka.cwiseProduct(amb_light_intensity);
         auto Ld = kd.cwiseProduct(light.intensity / squared_radius) * std::max(0.f, normal.dot(l));
         auto Ls = ks.cwiseProduct(light.intensity / squared_radius) * pow(std::max(0.f, normal.dot(h)), p);
-        result_color += La + Ld + Ls;
+        result_color += Ld + Ls;
     }
+    result_color += La;
 
     return result_color * 255.f;
 }
