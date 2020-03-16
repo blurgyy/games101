@@ -315,10 +315,8 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     float w = tex->width;
     float h = tex->height;
     // dU = kh * kn * (h(u+1/w,v)-h(u,v))
-    // WRONG： // float dU = kh * kn * (tex->getColor(u+1.f/w, v) - tex->getColor(u, v)).norm();
     float dU = kh * kn * (tex->getColor(u+1.f/w, v).norm() - tex->getColor(u, v).norm());
     // dV = kh * kn * (h(u,v+1/h)-h(u,v))
-    // WRONG： // float dV = kh * kn * (tex->getColor(u, v+1.f/h) - tex->getColor(u, v)).norm();
     float dV = kh * kn * (tex->getColor(u, v+1.f/h).norm() - tex->getColor(u, v).norm());
     // Vector ln = (-dU, -dV, 1)
     Eigen::Vector3f ln(-dU, -dV, 1);
@@ -345,7 +343,6 @@ int main(int argc, const char** argv)
 
     // Load .obj File
     bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
-    // bool loadout = Loader.LoadFile("../models/bunny/bunny.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
@@ -378,7 +375,8 @@ int main(int argc, const char** argv)
         {
             std::cout << "Rasterizing using the texture shader\n";
             active_shader = texture_fragment_shader;
-            texture_path = "spot_texture.png";
+            // texture_path = "spot_texture.png";
+            texture_path = "spot_texture.256.png";
             r.set_texture(Texture(obj_path + texture_path));
         }
         else if (argc == 3 && std::string(argv[2]) == "normal")
