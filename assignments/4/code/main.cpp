@@ -21,7 +21,7 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
     auto &p_2 = points[2];
     auto &p_3 = points[3];
 
-    float step = 1e-5;
+    float step = 1e-4;
 
     for (double t = 0.0; t <= 1.0; t += step) 
     {
@@ -51,30 +51,37 @@ cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, flo
 void set_pixel(cv::Point2f &point, cv::Mat &window){
     int row = point.y;
     int col = point.x;
-    for(int i = -1; i <= 1; ++ i){
-        for(int j = -1; j <= 1; ++ j){
-            // printf("setting pixel(%d, %d)\n", row+i, col+i);
-            int nr = row + i;
-            int nc = col + j;
-            if(nr < 0 || nc < 0 || nr >= window.rows || nc >= window.cols){
+    float d0 = sqrt((point.y - row - 0.5)*(point.y - row - 0.5)
+                    + (point.x - col - 0.5)*(point.x - col - 0.5));
+    typedef std::pair<int, int> pii;
+    pii drow, dcol;
+    drow = (point.y - row < 0.5) ? pii(-1, 0) : pii(0, 1);
+    dcol = (point.x - col < 0.5) ? pii(-1, 0) : pii(0, 1);
+    // printf("point: (%f, %f), row(%d, %d), col(%d, %d)\n", point.y, point.x, drow.first, drow.second, dcol.first, dcol.second);
+    for(int i = drow.first; i <= drow.second; ++ i){
+        for(int j = dcol.first; j <= dcol.second; ++ j){
+            int nrow = row + i;
+            int ncol = col + j;
+            if (nrow < 0 || ncol < 0 || nrow >= window.rows || ncol >= window.cols){
                 continue;
             }
-            auto &pixel = window.at<cv::Vec3b>(nr, nc);
-            float nr_mid = 0.5 + row + i;
-            float nc_mid = 0.5 + col + j;
-            float dist = sqrt((point.y - nr_mid) * (point.y - nr_mid) + (point.x - nc_mid) * (point.x - nc_mid));
-            if(dist > sqrt(5)/2){
-                continue;
-            }
-            // printf("dist = %f\n", dist);
-            float color;
-            if(dist < 0.5){
+            float dist = sqrt((point.y - nrow - 0.5) * (point.y - nrow - 0.5)
+                              + (point.x - ncol - 0.5) * (point.x - ncol - 0.5));
+            float color = 0;
+            if(dist < 1e-7){
                 color = 1;
             }
             else {
-                color = (dist - 1.5) * (dist - 1.5);
+                color = d0 / dist;
+                // color = (1.5 - dist);
+                // color = -(dist-0.5)*(dist-0.5) + 1;
+                // color = (dist-1.5)*(dist-1.5);
             }
-            pixel[1] = MAX(pixel[1], color * 255);
+            assert(color <= 1 && color >= 0);
+            auto &pixel = window.at<cv::Vec3b>(nrow, ncol);
+            // printf("pixel(%d, %d)[1]: %u", nrow, ncol, pixel[1]);
+            pixel[1] = MAX(pixel[1], color*255);
+            // printf(" -> %u, color = %f\n", pixel[1], color);
         }
     }
 }
@@ -83,7 +90,7 @@ void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window)
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
     // recursive Bezier algorithm.
-    float step = 1e-5;
+    float step = 1e-4;
     for(float t = 0; t < 1; t += step){
         auto point = recursive_bezier(control_points, t);
         // window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
