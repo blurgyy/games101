@@ -21,7 +21,9 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
     auto &p_2 = points[2];
     auto &p_3 = points[3];
 
-    for (double t = 0.0; t <= 1.0; t += 0.001) 
+    float step = 1e-5;
+
+    for (double t = 0.0; t <= 1.0; t += step) 
     {
         auto point = std::pow(1 - t, 3) * p_0 + 3 * t * std::pow(1 - t, 2) * p_1 +
                  3 * std::pow(t, 2) * (1 - t) * p_2 + std::pow(t, 3) * p_3;
@@ -46,14 +48,46 @@ cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, flo
     return recursive_bezier(nxt_points, t);
 }
 
+void set_pixel(cv::Point2f &point, cv::Mat &window){
+    int row = point.y;
+    int col = point.x;
+    for(int i = -1; i <= 1; ++ i){
+        for(int j = -1; j <= 1; ++ j){
+            // printf("setting pixel(%d, %d)\n", row+i, col+i);
+            int nr = row + i;
+            int nc = col + j;
+            if(nr < 0 || nc < 0 || nr >= window.rows || nc >= window.cols){
+                continue;
+            }
+            auto &pixel = window.at<cv::Vec3b>(nr, nc);
+            float nr_mid = 0.5 + row + i;
+            float nc_mid = 0.5 + col + j;
+            float dist = sqrt((point.y - nr_mid) * (point.y - nr_mid) + (point.x - nc_mid) * (point.x - nc_mid));
+            if(dist > sqrt(5)/2){
+                continue;
+            }
+            // printf("dist = %f\n", dist);
+            float color;
+            if(dist < 0.5){
+                color = 1;
+            }
+            else {
+                color = (dist - 1.5) * (dist - 1.5);
+            }
+            pixel[1] = MAX(pixel[1], color * 255);
+        }
+    }
+}
+
 void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window) 
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
     // recursive Bezier algorithm.
-    float step = 1e-3;
+    float step = 1e-5;
     for(float t = 0; t < 1; t += step){
         auto point = recursive_bezier(control_points, t);
-        window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
+        // window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
+        set_pixel(point, window);
     }
 }
 
