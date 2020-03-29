@@ -217,6 +217,7 @@ void Renderer::Render(const Scene& scene)
 
     // Use this variable as the eye position to start your rays.
     Vector3f eye_pos(0);
+    // Vector3f eye_pos(2, -2, -7);
     int m = 0;
     for (int j = 0; j < scene.height; ++j)
     {
@@ -230,7 +231,27 @@ void Renderer::Render(const Scene& scene)
             // Also, don't forget to multiply both of them with the variable *scale*, and
             // x (horizontal) variable with the *imageAspectRatio*            
 
+            x = i - eye_pos.x;
+            y = scene.height - j - eye_pos.y;
+
+            x /= (scene.width - 1);
+            y /= (scene.height - 1);
+
+            x = x * 2 - 1;
+            y = y * 2 - 1;
+
+            x *= scale * imageAspectRatio;
+            y *= scale;
+
+            // x = (i - scene.width/2 + 0.5) / (scene.width/2) * scale * imageAspectRatio;
+            // y = (j - scene.height/2 + 0.5) / (scene.height/2) * scale;
+            // printf("width = %d, height = %d\n", scene.height, scene.width);
+            // printf("x = %f, y = %f\n", x, y);
+
             Vector3f dir = Vector3f(x, y, -1); // Don't forget to normalize this direction!
+            // printf("(%f,%f,%f)\n", dir.x, dir.y, dir.z);
+            dir = normalize(dir);
+
             framebuffer[m++] = castRay(eye_pos, dir, scene, 0);
         }
         UpdateProgress(j / (float)scene.height);
