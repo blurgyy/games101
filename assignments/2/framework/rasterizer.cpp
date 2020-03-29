@@ -41,8 +41,6 @@ auto to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 
 static bool insideTriangle(float x, float y, const Eigen::Vector3f* _v) // where *_v is an array of vectors
 {
-    // TODO : Implement this function to check if the point (x, y) is
-    //        inside the triangle represented by _v[0], _v[1], _v[2]
 
     Eigen::Vector3f p(x, y, _v[0].z());
     Eigen::Vector3f res[3];
@@ -125,9 +123,6 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     auto v = t.toVector4();
-    
-    // TODO : Find out the bounding box of current triangle.
-    // iterate through the pixel and find if the current pixel is inside the triangle
 
     typedef std::pair<int, int> pii;
     pii bboxmin(width+1, height+1);
@@ -170,8 +165,6 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     // float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
     // float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
     // z_interpolated *= w_reciprocal;
-
-    // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
 }
 
 void rst::rasterizer::set_model(const Eigen::Matrix4f& m)

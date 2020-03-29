@@ -68,7 +68,6 @@ void set_pixel(cv::Point2f &point, cv::Mat &window){
 
 cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, float t) 
 {
-    // TODO: Implement de Casteljau's algorithm
     int len = control_points.size();
     if(len == 1){
         return control_points[0];
@@ -84,8 +83,6 @@ cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, flo
 
 void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window) 
 {
-    // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
-    // recursive Bezier algorithm.
     float step = 1e-4;
     for(float t = 0; t < 1; t += step){
         auto point = recursive_bezier(control_points, t);

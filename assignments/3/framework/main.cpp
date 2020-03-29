@@ -107,7 +107,6 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f return_color = {0, 0, 0};
     if (payload.texture)
     {
-        // TODO: Get the texture value at the texture coordinates of the current fragment
         float u = payload.tex_coords.x();
         float v = payload.tex_coords.y();
         // return_color = payload.texture->getColor(u, v);
@@ -138,8 +137,6 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
-        // components are. Then, accumulate that result on the *result_color* object.
         auto l = (light.position - point).normalized();
         auto v = (eye_pos - point).normalized();
         auto h = (l + v).normalized();
@@ -177,8 +174,6 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
-        // components are. Then, accumulate that result on the *result_color* object.
         auto l = (light.position - point).normalized();
         auto v = (eye_pos - point).normalized();
         auto h = (l + v).normalized();
@@ -217,7 +212,6 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
 
     float kh = 0.2, kn = 0.1;
     
-    // TODO: Implement displacement mapping here
     // Let n = normal = (x, y, z)
     Eigen::Vector3f n = normal.normalized();
     float x = n.x(), y = n.y(), z = n.z();
@@ -253,8 +247,6 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     auto La = ka.cwiseProduct(amb_light_intensity);
     for (auto& light : lights)
     {
-        // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
-        // components are. Then, accumulate that result on the *result_color* object.
         auto l = (light.position - point).normalized();
         auto v = (eye_pos - point).normalized();
         auto h = (l + v).normalized();
@@ -293,7 +285,6 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
 
     float kh = 0.2, kn = 0.1;
 
-    // TODO: Implement bump mapping here
     // Let n = normal = (x, y, z)
     Eigen::Vector3f n = normal.normalized();
     float x = n.x(), y = n.y(), z = n.z();
