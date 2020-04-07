@@ -56,22 +56,31 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
         int dim = centroidBounds.maxExtent();
         switch (dim) {
         case 0:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().x <
-                       f2->getBounds().Centroid().x;
-            });
+            std::nth_element(objects.begin(),
+                             objects.begin() + (objects.size() / 2),
+                             objects.end(),
+                             [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().x <
+                                        f2->getBounds().Centroid().x;
+                             });
             break;
         case 1:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().y <
-                       f2->getBounds().Centroid().y;
-            });
+            std::nth_element(objects.begin(),
+                             objects.begin() + (objects.size() / 2),
+                             objects.end(),
+                             [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().y <
+                                        f2->getBounds().Centroid().y;
+                             });
             break;
         case 2:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().z <
-                       f2->getBounds().Centroid().z;
-            });
+            std::nth_element(objects.begin(),
+                             objects.begin() + (objects.size() / 2),
+                             objects.end(),
+                             [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().z <
+                                        f2->getBounds().Centroid().z;
+                             });
             break;
         }
 
