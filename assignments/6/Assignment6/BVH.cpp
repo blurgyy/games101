@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include "BVH.hpp"
 
 BVHAccel::BVHAccel(std::vector<Object*> p, int maxPrimsInNode,
@@ -7,8 +8,7 @@ BVHAccel::BVHAccel(std::vector<Object*> p, int maxPrimsInNode,
     : maxPrimsInNode(std::min(255, maxPrimsInNode)), splitMethod(splitMethod),
       primitives(std::move(p))
 {
-    time_t start, stop;
-    time(&start);
+    auto start = std::chrono::system_clock::now();
     if (primitives.empty())
         return;
 
@@ -18,17 +18,11 @@ BVHAccel::BVHAccel(std::vector<Object*> p, int maxPrimsInNode,
     else if(splitMethod == SplitMethod::SAH){
         root = SAHPartition(primitives);
     }
+    auto stop = std::chrono::system_clock::now();
 
-    time(&stop);
-    double diff = difftime(stop, start);
-    int hrs = (int)diff / 3600;
-    int mins = ((int)diff / 60) - (hrs * 60);
-    int secs = (int)diff - (hrs * 3600) - (mins * 60);
-
-    printf(
-        "\rBVH Generation complete(%s): \nTime Taken: %i hrs, %i mins, %i secs\n\n",
-        splitMethod == SplitMethod::NAIVE ? "NAIVE" : "SAH", 
-        hrs, mins, secs);
+    printf("\rBVH Generation complete(%s): \n",
+        splitMethod == SplitMethod::NAIVE ? "NAIVE" : "SAH");
+    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << " milliseconds\n\n";
 }
 
 BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
