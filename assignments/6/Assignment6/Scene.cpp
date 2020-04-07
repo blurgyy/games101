@@ -4,10 +4,10 @@
 
 #include "Scene.hpp"
 
-
-void Scene::buildBVH() {
+void Scene::buildBVH(int maxPrimsInNode, BVHAccel::SplitMethod splitMethod)
+{
     printf(" - Generating BVH...\n\n");
-    this->bvh = new BVHAccel(objects, 1, BVHAccel::SplitMethod::NAIVE);
+    this->bvh = new BVHAccel(objects, maxPrimsInNode, splitMethod);
 }
 
 Intersection Scene::intersect(const Ray &ray) const

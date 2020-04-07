@@ -13,12 +13,24 @@ int main(int argc, char** argv)
 {
     Scene scene(1280, 960);
 
-    MeshTriangle bunny("../models/bunny/bunny.obj");
+    std::string splitMethodArg = "NAIVE";
+    if(argc > 1){
+        splitMethodArg = argv[1];
+    }
+    BVHAccel::SplitMethod splitMethod = BVHAccel::SplitMethod::NAIVE;
+    if(splitMethodArg == "SAH"){
+        splitMethod = BVHAccel::SplitMethod::SAH;
+    }
 
-    scene.Add(&bunny);
+    MeshTriangle bunny("../models/bunny/bunny.obj", 1, splitMethod);
+    MeshTriangle armadillo("../models/armadillo/armadillo.obj", 1, splitMethod);
+
+
+    // scene.Add(&bunny);
+    scene.Add(&armadillo);
     scene.Add(std::make_unique<Light>(Vector3f(-20, 70, 20), 1));
     scene.Add(std::make_unique<Light>(Vector3f(20, 70, 20), 1));
-    scene.buildBVH();
+    scene.buildBVH(1, splitMethod);
 
     Renderer r;
 

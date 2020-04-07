@@ -12,8 +12,12 @@ BVHAccel::BVHAccel(std::vector<Object*> p, int maxPrimsInNode,
     if (primitives.empty())
         return;
 
-    // root = recursiveBuild(primitives);
-    root = SAHPartition(primitives);
+    if(splitMethod == SplitMethod::NAIVE){
+        root = recursiveBuild(primitives);
+    }
+    else if(splitMethod == SplitMethod::SAH){
+        root = SAHPartition(primitives);
+    }
 
     time(&stop);
     double diff = difftime(stop, start);
@@ -22,7 +26,8 @@ BVHAccel::BVHAccel(std::vector<Object*> p, int maxPrimsInNode,
     int secs = (int)diff - (hrs * 3600) - (mins * 60);
 
     printf(
-        "\rBVH Generation complete: \nTime Taken: %i hrs, %i mins, %i secs\n\n",
+        "\rBVH Generation complete(%s): \nTime Taken: %i hrs, %i mins, %i secs\n\n",
+        splitMethod == SplitMethod::NAIVE ? "NAIVE" : "SAH", 
         hrs, mins, secs);
 }
 

@@ -33,7 +33,7 @@ public:
     const std::vector<std::unique_ptr<Light> >&  get_lights() const { return lights; }
     Intersection intersect(const Ray& ray) const;
     BVHAccel *bvh;
-    void buildBVH();
+    void buildBVH(int maxPrimsInNode = 1, BVHAccel::SplitMethod splitMethod= BVHAccel::SplitMethod::NAIVE);
     Vector3f castRay(const Ray &ray, int depth) const;
     bool trace(const Ray &ray, const std::vector<Object*> &objects, float &tNear, uint32_t &index, Object **hitObject);
     std::tuple<Vector3f, Vector3f> HandleAreaLight(const AreaLight &light, const Vector3f &hitPoint, const Vector3f &N,
