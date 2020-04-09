@@ -9,8 +9,6 @@
 #include <limits>
 #include <array>
 
-#include <cassert>
-
 class Bounds3
 {
   public:
@@ -99,9 +97,6 @@ inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
     // dirIsNeg: ray direction(x,y,z), dirIsNeg=[int(x<0),int(y<0),int(z<0)], use this to simplify your logic
     float tEnter = std::numeric_limits<float>::lowest();
     float tExit = std::numeric_limits<float>::max();
-    assert(ray.origin[0] == ray.origin.x);
-    assert(ray.origin[1] == ray.origin.y);
-    assert(ray.origin[2] == ray.origin.z);
     for(int dim = 0; dim < 3; ++ dim){
         float tMin = (pMin[dim] - ray.origin[dim]) * invDir[dim];
         float tMax = (pMax[dim] - ray.origin[dim]) * invDir[dim];
@@ -111,10 +106,6 @@ inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
         tEnter = std::max(tEnter, tMin);
         tExit = std::min(tExit, tMax);
     }
-    // if(tExit > 0){
-    //     printf("[%d %d %d]\n", dirIsNeg[0], dirIsNeg[1], dirIsNeg[2]);
-    //     printf("tEnter = %f, tExit = %f\n", tEnter, tExit);
-    // }
     return (tEnter < tExit && tExit > 0);
 }
 

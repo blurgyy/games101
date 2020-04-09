@@ -125,6 +125,7 @@ BVHBuildNode *BVHAccel::SAHPartition(std::vector<Object *> objects){
         for (int i = 0; i < objects.size(); ++i)
             centroidBounds =
                 Union(centroidBounds, objects[i]->getBounds().Centroid());
+
         const int nBuckets = 32;
         int cnt[nBuckets];
         Bounds3 aabb[nBuckets];
@@ -207,9 +208,7 @@ Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
     // is intermidiate node
     Intersection lRet = getIntersection(node->left, ray);
     Intersection rRet = getIntersection(node->right, ray);
-    if(lRet.happened){
-        ret = lRet;
-    }
+    ret = lRet;
     if(rRet.happened){
         if(rRet.distance < ret.distance){
             ret = rRet;
