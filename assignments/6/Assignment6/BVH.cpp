@@ -54,39 +54,31 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
             centroidBounds =
                 Union(centroidBounds, objects[i]->getBounds().Centroid());
         int dim = centroidBounds.maxExtent();
+
+        auto beginning = objects.begin();
+        auto middling = objects.begin() + (objects.size() / 2);
+        auto ending = objects.end();
+
         switch (dim) {
         case 0:
-            std::nth_element(objects.begin(),
-                             objects.begin() + (objects.size() / 2),
-                             objects.end(),
-                             [](auto f1, auto f2) {
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
                                  return f1->getBounds().Centroid().x <
                                         f2->getBounds().Centroid().x;
                              });
             break;
         case 1:
-            std::nth_element(objects.begin(),
-                             objects.begin() + (objects.size() / 2),
-                             objects.end(),
-                             [](auto f1, auto f2) {
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
                                  return f1->getBounds().Centroid().y <
                                         f2->getBounds().Centroid().y;
                              });
             break;
         case 2:
-            std::nth_element(objects.begin(),
-                             objects.begin() + (objects.size() / 2),
-                             objects.end(),
-                             [](auto f1, auto f2) {
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
                                  return f1->getBounds().Centroid().z <
                                         f2->getBounds().Centroid().z;
                              });
             break;
         }
-
-        auto beginning = objects.begin();
-        auto middling = objects.begin() + (objects.size() / 2);
-        auto ending = objects.end();
 
         auto leftshapes = std::vector<Object*>(beginning, middling);
         auto rightshapes = std::vector<Object*>(middling, ending);
@@ -133,23 +125,24 @@ BVHBuildNode *BVHAccel::SAHPartition(std::vector<Object *> objects){
         for (int i = 0; i < objects.size(); ++i)
             centroidBounds =
                 Union(centroidBounds, objects[i]->getBounds().Centroid());
-        const int nBuckets = 16;
+        const int nBuckets = 32;
         int cnt[nBuckets];
         Bounds3 aabb[nBuckets];
         std::vector<Object *> bucket[nBuckets];
         float minCost = std::numeric_limits<float>::max();
         int split = -1;
-
         int dim = centroidBounds.maxExtent();
+        float dimExtent = bounds.Diagonal()[dim];
+
+        // initialize
         for(int i = 0; i < nBuckets; ++ i){
             cnt[i] = 0;
             aabb[i] = Bounds3();
             bucket[i].clear();
         }
-        float dimExtent = bounds.Diagonal()[dim];
         for(auto obj : objects){
-            float position = obj->getBounds().Centroid()[dim] - bounds.pMin[dim];
-            int bucIndex = int(position * nBuckets / dimExtent);
+            float offset = obj->getBounds().Centroid()[dim] - bounds.pMin[dim];
+            int bucIndex = int(offset * nBuckets / dimExtent);
             aabb[bucIndex] = Union(aabb[bucIndex], obj->getBounds());
             bucket[bucIndex].push_back(obj);
             cnt[bucIndex] ++;

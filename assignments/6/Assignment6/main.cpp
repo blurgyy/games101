@@ -23,11 +23,11 @@ int main(int argc, char** argv)
     }
 
     MeshTriangle bunny("../models/bunny/bunny.obj", 1, splitMethod);
-    MeshTriangle armadillo("../models/armadillo/armadillo.obj", 1, splitMethod);
+    // MeshTriangle armadillo("../models/armadillo/armadillo.obj", 1, splitMethod);
 
 
-    // scene.Add(&bunny);
-    scene.Add(&armadillo);
+    scene.Add(&bunny);
+    // scene.Add(&armadillo);
     scene.Add(std::make_unique<Light>(Vector3f(-20, 70, 20), 1));
     scene.Add(std::make_unique<Light>(Vector3f(20, 70, 20), 1));
     scene.buildBVH(1, splitMethod);
