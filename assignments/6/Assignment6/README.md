@@ -16,18 +16,23 @@
   所以 SAH 可以通过遍历空间中每一个可能的划分, 计算它们的 cost, 并选取 cost 最小的划分作为本次使用的划分. 实际做法中为了加速这个过程, 使用了若干个桶来统计空间中物体所在的位置, 最后遍历桶与桶之间的位置作为划分点, 同样选取 cost 最小的划分.
 - 时间开销对比:
   - 实验条件:
-    - 打开 g++ O2 优化, naive BVH 实现中的 `std::sort` 改为复杂度 O(n) 的 `std::nth_element`;
+    - 打开 g++ O2 优化;
+    - naive BVH 实现中的 `std::sort` 改为复杂度 O(n) 的 `std::nth_element`;
     - SAH 加速的 BVH 实现中, 桶的个数使用 32, 每次划分在最长的轴上选择划分点.
   - 实验结果:
     - 作业中带的 bunny 模型:
       - naive BVH: 建树 `10 ms`, 渲染 `1041 ms`
       - SVH 加速: 建树 `17 ms`, 渲染 `934 ms`(-10.3%)
+      - [结果截图](images/time-diff-bunny.jpg)
     - 论坛中的同学发布的 armadillo 模型 (更大):
       - naive BVH: 建树 `267 ms`, 渲染 `15132 ms`
       - SVH 加速: 建树 `354 ms`, 渲染 `12570 ms`(-16.9%)
+      - [结果截图](images/time-diff-armadillo.jpg)
   - 分析: naive BVH 的建树过程只要 O(n) 找到中位数即可, SVH 的建树过程还有计算 cost 的时间开销, 使用 bucket 是一种加速方式, bucket 数量降低到 16 可以使 SVH 的建树比 naive BVH 更快; 建树之后由于 SVH 的树就是最小化了光线"被浪费"的概率, 所以渲染过程中 SVH 更快. 上面两个测试可以看出 SVH 加速后, 渲染时间大致可以降低多于 10%.
 
 ***
 
 - 各个函数中实现的功能:
-  - ``:
+  - `IntersectP()`: 判断一条光线是否穿过一个包围盒. 分别在一个包围盒的三个对面上计算出 `tEnter` 和 `tExit`, 最后判断如果有三组 `tEnter` 和 `tExit` 之间的交集不为空, 并且 `tExit` 大于 0, 则光线穿过了包围盒, 返回 `true`. 否则返回 `false`.
+  - `getIntersection()`: 判断一条光线是否穿过 BVH Node, 如果穿过, 则对这一 BVH Node 的两个子节点递归调用自身. 如果当前的 BVH Node 没有子节点 (是叶子节点), 则判断光线与本叶子节点中的物体是否相交, 相交的话返回这一个相交点的信息.
+  - `SAHPartition()`: 用于 SVH 加速 BVH 建树. 仍然递归建树, 每次划分节点时在最长的轴上选取划分点. 划分点的标准通过计算 cost 并选取 cost 最小的划分点来确定. 实现中使用了 32 个 buckets.
