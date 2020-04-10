@@ -129,6 +129,7 @@ BVHBuildNode *BVHAccel::SAHPartition(std::vector<Object *> objects){
         const int nBuckets = 32;
         int cnt[nBuckets];
         Bounds3 aabb[nBuckets];
+        Bounds3 suf[nBuckets];
         std::vector<Object *> bucket[nBuckets];
         float minCost = std::numeric_limits<float>::max();
         int split = -1;
@@ -148,15 +149,17 @@ BVHBuildNode *BVHAccel::SAHPartition(std::vector<Object *> objects){
             bucket[bucIndex].push_back(obj);
             cnt[bucIndex] ++;
         }
+        suf[nBuckets-1] = aabb[nBuckets-1];
+        for(int i = nBuckets - 2; i >= 0; -- i){
+            suf[i] = Union(aabb[i], suf[i+1]);
+        }
         for(int i = 1; i < nBuckets; ++ i){
             cnt[i] += cnt[i-1];
+            aabb[i] = Union(aabb[i], aabb[i-1]);
             int lCnt = cnt[i-1];
             int rCnt = objects.size() - lCnt;
-            Bounds3 lBound, rBound;
-            for(int j = 0; j < i; ++ j)
-                lBound = Union(lBound, aabb[j]);
-            for(int j = i; j < nBuckets; ++ j)
-                rBound = Union(rBound, aabb[j]);
+            Bounds3 lBound = aabb[i-1];
+            Bounds3 rBound = suf[i];
             float ithCost = lBound.SurfaceArea() * lCnt + rBound.SurfaceArea() * rCnt;
             if(ithCost < minCost){
                 minCost = ithCost;
