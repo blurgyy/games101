@@ -39,7 +39,6 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
         node->object = objects[0];
         node->left = nullptr;
         node->right = nullptr;
-        node->area = objects[0]->getArea();
         return node;
     }
     else if (objects.size() == 2) {
@@ -47,7 +46,6 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
         node->right = recursiveBuild(std::vector{objects[1]});
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
-        node->area = node->left->area + node->right->area;
         return node;
     }
     else {
@@ -56,30 +54,31 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
             centroidBounds =
                 Union(centroidBounds, objects[i]->getBounds().Centroid());
         int dim = centroidBounds.maxExtent();
-        switch (dim) {
-        case 0:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().x <
-                       f2->getBounds().Centroid().x;
-            });
-            break;
-        case 1:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().y <
-                       f2->getBounds().Centroid().y;
-            });
-            break;
-        case 2:
-            std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-                return f1->getBounds().Centroid().z <
-                       f2->getBounds().Centroid().z;
-            });
-            break;
-        }
 
         auto beginning = objects.begin();
         auto middling = objects.begin() + (objects.size() / 2);
         auto ending = objects.end();
+
+        switch (dim) {
+        case 0:
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().x <
+                                        f2->getBounds().Centroid().x;
+                             });
+            break;
+        case 1:
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().y <
+                                        f2->getBounds().Centroid().y;
+                             });
+            break;
+        case 2:
+            std::nth_element(beginning, middling, ending, [](auto f1, auto f2) {
+                                 return f1->getBounds().Centroid().z <
+                                        f2->getBounds().Centroid().z;
+                             });
+            break;
+        }
 
         auto leftshapes = std::vector<Object*>(beginning, middling);
         auto rightshapes = std::vector<Object*>(middling, ending);
@@ -90,7 +89,6 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
         node->right = recursiveBuild(rightshapes);
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
-        node->area = node->left->area + node->right->area;
     }
 
     return node;
