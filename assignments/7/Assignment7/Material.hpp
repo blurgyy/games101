@@ -7,7 +7,10 @@
 
 #include "Vector.hpp"
 
-enum MaterialType { DIFFUSE};
+enum MaterialType {
+    DIFFUSE,
+    MICROFACET
+};
 
 class Material{
 private:
@@ -90,6 +93,7 @@ public:
     //Vector3f m_color;
     Vector3f m_emission;
     float ior;
+    float alpha; // roughness
     Vector3f Kd, Ks;
     float specularExponent;
     //Texture tex;
@@ -142,6 +146,17 @@ Vector3f Material::sample(const Vector3f &wi, const Vector3f &N){
             
             break;
         }
+        case MICROFACET:
+        {
+            // uniform sample on the hemisphere
+            float x_1 = get_random_float(), x_2 = get_random_float();
+            float z = std::fabs(1.0f - 2.0f * x_1);
+            float r = std::sqrt(1.0f - z * z), phi = 2 * M_PI * x_2;
+            Vector3f localRay(r*std::cos(phi), r*std::sin(phi), z);
+            return toWorld(localRay, N);
+            
+            break;
+        }
     }
 }
 
@@ -156,22 +171,55 @@ float Material::pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N){
                 return 0.0f;
             break;
         }
+        case MICROFACET:
+        {
+            // uniform sample probability 1 / (2 * PI)
+            if (dotProduct(wo, N) > 0.0f)
+                return 0.5f / M_PI;
+            else
+                return 0.0f;
+            break;
+        }
     }
 }
 
 Vector3f Material::eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N){
+    if(dotProduct(wi, N) < 0.f || dotProduct(wo, N) < 0.f){
+        return Vector3f(0);
+    }
     switch(m_type){
         case DIFFUSE:
         {
-            // calculate the contribution of diffuse   model
-            float cosalpha = dotProduct(N, wo);
-            if (cosalpha > 0.0f) {
-                Vector3f diffuse = Kd / M_PI;
-                return diffuse;
-            }
-            else
-                return Vector3f(0.0f);
-            break;
+            // calculate the contribution of diffuse model
+            Vector3f diffuse = Kd / M_PI;
+            return diffuse;
+        }
+        case MICROFACET:
+        {
+            Vector3f f_lambert = Kd / M_PI;
+
+            Vector3f h = normalize(wi + wo);
+            float alpha2 = alpha * alpha;
+            float k = (alpha+1) * (alpha+1) / 8;
+            float F, G_cook, D_ggx;
+            float NdotV = dotProduct(N, wo);
+            float NdotL = dotProduct(N, wi);
+            float NdotH = dotProduct(N, h);
+            float NdotH2 = NdotH * NdotH;
+            // fresnel
+            fresnel(-wi, N, ior, F);
+            // geometric shadowing/masking
+            G_cook = std::min(1.f, std::min(
+                NdotH * NdotV,
+                NdotH * NdotL
+            ) * 2 / dotProduct(wo, h));
+            // normal distribution
+            float bot = NdotH2 * (alpha2 - 1) + 1;
+            bot = M_PI * bot * bot;
+            D_ggx = alpha2 / bot;
+            float f_cook = F * G_cook * D_ggx 
+                / (4 * dotProduct(wo, N) * dotProduct(wi, N));
+            return Kd * f_lambert + Ks * f_cook;
         }
     }
 }

@@ -15,7 +15,7 @@ const float EPSILON = 1e-3;
 // The main render function. This where we iterate over all pixels in the image,
 // generate primary rays and cast these rays into the scene. The content of the
 // framebuffer is saved to a file.
-void Renderer::Render(const Scene& scene)
+void Renderer::Render(const Scene& scene, int spp)
 {
     std::vector<Vector3f> framebuffer(scene.width * scene.height);
 
@@ -23,11 +23,9 @@ void Renderer::Render(const Scene& scene)
     float imageAspectRatio = scene.width / (float)scene.height;
     Vector3f eye_pos(278, 273, -800);
 
-    // change the spp value to change sample ammount
-    int spp = 64;
     std::cout << "SPP: " << spp << "\n";
     for (uint32_t j = 0; j < scene.height; ++j) {
-        #pragma omp parallel for
+        #pragma omp parallel for num_threads(8)
         for (uint32_t i = 0; i < scene.width; ++i) {
             // generate primary ray direction
             float x = (2 * (i + 0.5) / (float)scene.width - 1) *
