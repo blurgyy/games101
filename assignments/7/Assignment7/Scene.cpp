@@ -60,7 +60,6 @@ bool Scene::trace(
 // Implementation of Path Tracing
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
-    // TODO Implement Path Tracing Algorithm here
     if(depth > this->maxDepth){
         return Vector3f(0,0,0);
     }
@@ -86,14 +85,11 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         Vector3f NN = inter.normal;
         Vector3f emit = inter.emit;
         Ray checker_ray(p, ws);
-        if((this->intersect(checker_ray).coords - x).norm() < EPSILON){
+        Material* mm = this->intersect(checker_ray).m;
+        if(mm && mm->hasEmission()){
             Vector3f f_r = m->eval(wo, ws, N);
             L_dir = emit * f_r * dotProduct(ws, N) * dotProduct(-ws, NN)
                 / dotProduct(x-p, x-p) / pdf_light;
-            // printf("(%f)\n", dotProduct(ws, N));
-            // printf("%f\n", pdf_light);
-            // printf("%f\n", L_dir.norm());
-            // std::cout << m->eval(wo, ws, N) << std::endl;
         }
         if(get_random_float() < RussianRoulette){
             Vector3f wi = m->sample(wo, N);

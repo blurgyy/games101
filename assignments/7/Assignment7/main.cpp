@@ -14,9 +14,11 @@ int main(int argc, char** argv)
 {
 
     // Change the definition here to change resolution
+    Scene scene(256, 256);
+    // Scene scene(512, 512);
     // Scene scene(784, 784);
-    // Scene scene(256, 256);
-    Scene scene(1080, 1080);
+    // Scene scene(1080, 1080);
+    int spp = 16;
 
     Material* red = new Material(DIFFUSE, Vector3f(0.0f));
     red->Kd = Vector3f(0.63f, 0.065f, 0.05f);
@@ -26,6 +28,11 @@ int main(int argc, char** argv)
     white->Kd = Vector3f(0.725f, 0.71f, 0.68f);
     Material* light = new Material(DIFFUSE, (8.0f * Vector3f(0.747f+0.058f, 0.747f+0.258f, 0.747f) + 15.6f * Vector3f(0.740f+0.287f,0.740f+0.160f,0.740f) + 18.4f *Vector3f(0.737f+0.642f,0.737f+0.159f,0.737f)));
     light->Kd = Vector3f(0.65f);
+    Material* metal = new Material(MICROFACET, Vector3f(0));
+    metal->ior = 15;
+    metal->alpha = 0.2;
+    metal->Kd = Vector3f(0.1f, 0.1f, 0.1f);
+    metal->Ks = Vector3f(1.f) - metal->Kd;
 
     MeshTriangle floor("../models/cornellbox/floor.obj", white);
     MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
@@ -33,10 +40,19 @@ int main(int argc, char** argv)
     MeshTriangle left("../models/cornellbox/left.obj", red);
     MeshTriangle right("../models/cornellbox/right.obj", green);
     MeshTriangle light_("../models/cornellbox/light.obj", light);
+    MeshTriangle floor_metal("../models/cornellbox/floor.obj", metal);
+    MeshTriangle shortbox_metal("../models/cornellbox/shortbox.obj", metal);
+    MeshTriangle tallbox_metal("../models/cornellbox/tallbox.obj", metal);
+    Sphere sphere_metal(Vector3f(100, 100, 200), 100, metal);
 
-    scene.Add(&floor);
-    scene.Add(&shortbox);
+    // scene.Add(&floor);
+    // scene.Add(&shortbox);
     scene.Add(&tallbox);
+    scene.Add(&floor_metal);
+    // scene.Add(&shortbox_metal);
+    // scene.Add(&tallbox_metal);
+    scene.Add(&sphere_metal);
+
     scene.Add(&left);
     scene.Add(&right);
     scene.Add(&light_);
@@ -46,7 +62,7 @@ int main(int argc, char** argv)
     Renderer r;
 
     auto start = std::chrono::system_clock::now();
-    r.Render(scene);
+    r.Render(scene, spp);
     auto stop = std::chrono::system_clock::now();
 
     std::cout << "Render complete: \n";
