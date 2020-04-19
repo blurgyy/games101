@@ -25,7 +25,7 @@ void Renderer::Render(const Scene& scene, int spp)
 
     std::cout << "SPP: " << spp << "\n";
     for (uint32_t j = 0; j < scene.height; ++j) {
-        #pragma omp parallel for num_threads(8)
+        #pragma omp parallel for
         for (uint32_t i = 0; i < scene.width; ++i) {
             // generate primary ray direction
             float x = (2 * (i + 0.5) / (float)scene.width - 1) *
