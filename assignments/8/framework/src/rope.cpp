@@ -22,14 +22,15 @@ namespace CGL {
             Spring* spring = new Spring(masses[i-1], masses[i], k);
             springs.push_back(spring);
         }
-//        Comment-in this part when you implement the constructor
-       for (auto &i : pinned_nodes) {
-           masses[i]->pinned = true;
-       }
+
+        for (auto &i : pinned_nodes) {
+            masses[i]->pinned = true;
+        }
     }
 
     void Rope::simulateEuler(float delta_t, Vector2D gravity)
     {
+        // return;
         for (auto &s : springs)
         {
             // TODO (Part 2): Use Hooke's law to calculate the force on a node
@@ -48,15 +49,17 @@ namespace CGL {
             {
                 // TODO (Part 2): Add the force due to gravity, then compute the new velocity and position
                 m->forces += gravity * m->mass;
+                // damping factor
+                double kd = 5e-3;
+                m->forces += -kd * m->velocity;
                 Vector2D accel = m->forces / m->mass;
-                // Explicit Euler method
+                // // Explicit Euler method
                 // m->position += m->velocity * delta_t;
                 // m->velocity += accel * delta_t;
 
                 // Semi-implicit Euler method
                 m->velocity += accel * delta_t;
                 m->position += m->velocity * delta_t;
-                // TODO (Part 2): Add global damping
             }
 
             // Reset all forces on each mass
@@ -66,6 +69,7 @@ namespace CGL {
 
     void Rope::simulateVerlet(float delta_t, Vector2D gravity)
     {
+        // return;
         for (auto &s : springs)
         {
             // TODO (Part 3): Simulate one timestep of the rope using explicit Verlet （solving constraints)
@@ -85,11 +89,9 @@ namespace CGL {
             if (!m->pinned)
             {
                 Vector2D temp_position = m->position;
-                // TODO (Part 3.1): Set the new position of the rope mass
-                
-                // TODO (Part 4): Add global Verlet damping
-                double damping_factor = 5e-5;
-                m->position = m->position + (1 - damping_factor) * (m->position - m->last_position)
+                // damping factor
+                double kd = 5e-5;
+                m->position = m->position + (1 - kd) * (m->position - m->last_position)
                     + gravity * delta_t * delta_t;
                 m->last_position = temp_position;
             }
