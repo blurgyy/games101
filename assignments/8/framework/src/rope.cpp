@@ -47,7 +47,7 @@ namespace CGL {
             if (!m->pinned)
             {
                 // TODO (Part 2): Add the force due to gravity, then compute the new velocity and position
-                m->forces += gravity;
+                m->forces += gravity * m->mass;
                 Vector2D accel = m->forces / m->mass;
                 // Explicit Euler method
                 // m->position += m->velocity * delta_t;
